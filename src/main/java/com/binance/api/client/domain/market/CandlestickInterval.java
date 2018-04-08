@@ -30,4 +30,39 @@ public enum CandlestickInterval {
   public String getIntervalId() {
     return intervalId;
   }
+  
+  public static CandlestickInterval getCandlestickInterval(String interval) {
+	  CandlestickInterval intervalId = CandlestickInterval.FIVE_MINUTES;
+		if (interval.equals(CandlestickInterval.ONE_MINUTE.toString()))
+			intervalId = CandlestickInterval.ONE_MINUTE;
+		else if (interval.equals(CandlestickInterval.THREE_MINUTES.toString()))
+			intervalId = CandlestickInterval.THREE_MINUTES;
+		else if (interval.equals(CandlestickInterval.THREE_MINUTES.toString()))
+			intervalId = CandlestickInterval.THREE_MINUTES;
+		else if (interval.equals(CandlestickInterval.FIFTEEN_MINUTES.toString()))
+			intervalId = CandlestickInterval.FIFTEEN_MINUTES;
+		else if (interval.equals(CandlestickInterval.HALF_HOURLY.toString()))
+			intervalId = CandlestickInterval.HALF_HOURLY;
+		else if (interval.equals(CandlestickInterval.HOURLY.toString()))
+			intervalId = CandlestickInterval.HOURLY;
+		else if (interval.equals(CandlestickInterval.TWO_HOURLY.toString()))
+			intervalId = CandlestickInterval.TWO_HOURLY;
+		else if (interval.equals(CandlestickInterval.FOUR_HOURLY.toString()))
+			intervalId = CandlestickInterval.FOUR_HOURLY;
+		else if (interval.equals(CandlestickInterval.SIX_HOURLY.toString()))
+			intervalId = CandlestickInterval.SIX_HOURLY;
+		else if (interval.equals(CandlestickInterval.EIGHT_HOURLY.toString()))
+			intervalId = CandlestickInterval.EIGHT_HOURLY;
+		else if (interval.equals(CandlestickInterval.TWELVE_HOURLY.toString()))
+			intervalId = CandlestickInterval.TWELVE_HOURLY;
+		else if (interval.equals(CandlestickInterval.DAILY.toString()))
+			intervalId = CandlestickInterval.DAILY;
+		else if (interval.equals(CandlestickInterval.THREE_DAILY.toString()))
+			intervalId = CandlestickInterval.THREE_DAILY;
+		else if (interval.equals(CandlestickInterval.WEEKLY.toString()))
+			intervalId = CandlestickInterval.WEEKLY;
+		else if (interval.equals(CandlestickInterval.MONTHLY.toString()))
+			intervalId = CandlestickInterval.MONTHLY;
+		return intervalId;
+  }
 }

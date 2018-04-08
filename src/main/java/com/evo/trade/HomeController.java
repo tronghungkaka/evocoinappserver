@@ -64,7 +64,7 @@ public class HomeController {
 			@RequestParam("exchange") String exchange,
 			@RequestParam("interval") String interval) {
 		BollingerBandResponse bbres = new BollingerBandResponse();
-		List<BollingerBand> bollingerbands = EvoBollingerBandDao.getInstance().getBollingerBands();
+		List<BollingerBand> bollingerbands = EvoBollingerBandDao.getInstance().getBollingerBands(exchange, interval);
 		if(bollingerbands == null)
 			return bbres;
 		if(bollingerbands != null && !bollingerbands.isEmpty()) {
@@ -73,14 +73,14 @@ public class HomeController {
 		else {
 			bbres.lastUpdated = System.currentTimeMillis();
 		}
-		if(!exchange.equalsIgnoreCase("all")) {
-			bollingerbands = bollingerbands.stream()
-					.filter( bb -> bb.getExchange().equalsIgnoreCase(exchange))
-					.collect(Collectors.toList());
-		}
-		bollingerbands = bollingerbands.stream()
-				.filter( bb -> bb.getInterval().equals(interval))
-				.collect(Collectors.toList());
+//		if(!exchange.equalsIgnoreCase("all")) {
+//			bollingerbands = bollingerbands.stream()
+//					.filter( bb -> bb.getExchange().equalsIgnoreCase(exchange))
+//					.collect(Collectors.toList());
+//		}
+//		bollingerbands = bollingerbands.stream()
+//				.filter( bb -> bb.getInterval().equals(interval))
+//				.collect(Collectors.toList());
 		bbres.ooLowerBBs = bollingerbands.stream()
 					.filter( bb -> bb.isOutOfLowerBollingerBand())
 					.collect(Collectors.toList());

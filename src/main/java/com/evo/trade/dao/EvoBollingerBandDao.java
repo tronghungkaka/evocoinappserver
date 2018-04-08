@@ -10,7 +10,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.binance.api.client.domain.market.CandlestickInterval;
 import com.evo.trade.objects.BollingerBand;
+import com.evo.trade.service.EvoBollingerBandService;
 
 public class EvoBollingerBandDao extends ConfigDao {
 	// Singleton design pattern
@@ -57,6 +59,27 @@ public class EvoBollingerBandDao extends ConfigDao {
 
 		return bollingerbands;
 	}
+	
+	public List<BollingerBand> getBollingerBands(String exchange, String interval) {
+		List<BollingerBand> bollingerbands = new ArrayList<>();
+		switch (database) {
+		case PROPERTY:
+			CandlestickInterval intervalId = CandlestickInterval.getCandlestickInterval(interval);
+			bollingerbands = EvoBollingerBandService.getBollingerBands(intervalId);
+			break;
+		case FILE:
+			for (String candlestickInterval : BollingerBand.CANDLESTICK_INTERVALS) {
+				bollingerbands.addAll( getBollingerBands("BinanceBollingerBand" + candlestickInterval + ".dat") );
+			}
+			break;
+
+		case MYSQL:
+			break;
+		}
+
+		return bollingerbands;
+	}
+
 
 	public List<BollingerBand> getBollingerBands(String fileName) {
 		List<BollingerBand> bollingerbands = new ArrayList<>();

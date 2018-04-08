@@ -106,6 +106,13 @@ public class BollingerBand implements Serializable {
 		
 	}
 	
+	public BollingerBand(String exchange, Double lastPrice) {
+//		setInterval(interval);
+		setExchange(exchange);
+//		setSymbol(symbol);
+		setLastPrice(lastPrice);
+	}
+	
 	public BollingerBand(String exchange, String symbol, String interval, Double lastPrice) {
 		setInterval(interval);
 		setExchange(exchange);
