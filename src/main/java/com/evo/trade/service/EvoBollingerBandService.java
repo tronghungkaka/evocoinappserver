@@ -25,6 +25,10 @@ public class EvoBollingerBandService {
 	public EvoBollingerBandService(List<CandlestickInterval> candlestickIntervals) {
 		
 		map = new TreeMap<>();
+		for (CandlestickInterval cdInterval : candlestickIntervals) {
+			List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
+			map.put(cdInterval, candlesticksCaches);
+		}
 
 		BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance();
 	    BinanceApiRestClient client = factory.newRestClient();
@@ -32,7 +36,6 @@ public class EvoBollingerBandService {
 		
 		for (CandlestickInterval cdInterval : candlestickIntervals) {
 			List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
-			map.put(cdInterval, candlesticksCaches);
 			for (TickerPrice tickerPrice : tickerPrices) {
 				candlesticksCaches.add( new CandlesticksCache(tickerPrice.getSymbol(), cdInterval) );
 			}
@@ -45,6 +48,8 @@ public class EvoBollingerBandService {
 	}
 	
 	public static List<CandlesticksCache> getCandlesticksCaches(CandlestickInterval interval) {
+//		System.out.println("EvobollingerBandService.java: interval=" + interval);
+//		System.out.println("EvobollingerBandService.java: interval.getIntervalId()=" + interval.getIntervalId());
 		return map.get(interval);
 	}
 	
