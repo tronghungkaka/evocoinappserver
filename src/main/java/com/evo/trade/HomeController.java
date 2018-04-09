@@ -21,7 +21,7 @@ import com.evo.trade.objects.BollingerBand;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @RestController
-@CrossOrigin(origins = {"http://localhost:4200", "https://evotradeapp.herokuapp.com", "https://dreamerstradeapp.herokuapp.com" })
+@CrossOrigin(origins = {"http://localhost:4200", "https://evocoinapp.herokuapp.com"})
 public class HomeController {
 
 	@RequestMapping("/")
