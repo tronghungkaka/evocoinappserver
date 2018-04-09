@@ -34,13 +34,16 @@ public class EvoBollingerBandService {
 	    BinanceApiRestClient client = factory.newRestClient();
 		List<TickerPrice> tickerPrices = client.getAllPrices();
 		
+		int threadCount = 0;
 		for (CandlestickInterval cdInterval : candlestickIntervals) {
 			List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
 			for (TickerPrice tickerPrice : tickerPrices) {
 				candlesticksCaches.add( new CandlesticksCache(tickerPrice.getSymbol(), cdInterval) );
+				++threadCount;
 			}
 			map.put(cdInterval, candlesticksCaches);
 		}
+		System.out.println("threadCount=" + threadCount);
 	}
 	
 	public static Map<CandlestickInterval, List<CandlesticksCache>> getAllCandlesticksCaches() {

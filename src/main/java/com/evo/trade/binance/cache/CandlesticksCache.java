@@ -20,7 +20,7 @@ public class CandlesticksCache {
    * Key is the start/open time of the candle, and the value contains candlestick date.
    */
   private Map<Long, Candlestick> candlesticksCache;
-  private int maxSize = 50;
+  private int maxSize = 20;
   private String symbol;
   private CandlestickInterval interval;
 
