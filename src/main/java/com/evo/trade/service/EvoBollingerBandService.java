@@ -38,6 +38,10 @@ public class EvoBollingerBandService {
 		for (CandlestickInterval cdInterval : candlestickIntervals) {
 			List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
 			for (TickerPrice tickerPrice : tickerPrices) {
+				//this is very very idiot, only use for reduce heap memory temporally
+				if(tickerPrice.getSymbol().endsWith("USDT") || tickerPrice.getSymbol().endsWith("BNB"))
+					continue;
+				
 				candlesticksCaches.add( new CandlesticksCache(tickerPrice.getSymbol(), cdInterval) );
 				++threadCount;
 			}
