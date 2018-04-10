@@ -55,8 +55,9 @@ public class EvoBollingerBandService {
 	}
 	
 	public static List<CandlesticksCache> getCandlesticksCaches(CandlestickInterval interval) {
-//		System.out.println("EvobollingerBandService.java: interval=" + interval);
-//		System.out.println("EvobollingerBandService.java: interval.getIntervalId()=" + interval.getIntervalId());
+		System.out.println("EvobollingerBandService.java: interval=" + interval);
+		System.out.println("EvobollingerBandService.java: interval.getIntervalId()=" + interval.getIntervalId());
+		System.out.println("EvoBollingerBandService.java: map.get(interval).size()=" + map.get(interval).size());
 		return map.get(interval);
 	}
 	
@@ -67,6 +68,8 @@ public class EvoBollingerBandService {
 		CoinmarketcapTickerPrice cmcETHTickerPrice = CoinmarketcapApiService.getCoinmarketcapTickerPrice("ethereum", null);
 		CoinmarketcapTickerPrice cmcBNBTickerPrice = CoinmarketcapApiService.getCoinmarketcapTickerPrice("binance-coin", null);
 		CoinmarketcapTickerPrice cmcUSDTTickerPrice = CoinmarketcapApiService.getCoinmarketcapTickerPrice("tether", null);
+		
+		System.out.println("EvoBollingerBandService.java: updateCount=" + CandlesticksCache.updateCount);
 		
 		for (CandlesticksCache candlesticksCache : candlesticksCaches) {
 			List<Candlestick> candlesticks = candlesticksCache.getLatestCandlesticksCacheSet(20);
