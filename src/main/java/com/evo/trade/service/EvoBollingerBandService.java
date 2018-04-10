@@ -69,7 +69,7 @@ public class EvoBollingerBandService {
 		CoinmarketcapTickerPrice cmcBNBTickerPrice = CoinmarketcapApiService.getCoinmarketcapTickerPrice("binance-coin", null);
 		CoinmarketcapTickerPrice cmcUSDTTickerPrice = CoinmarketcapApiService.getCoinmarketcapTickerPrice("tether", null);
 		
-		System.out.println("EvoBollingerBandService.java: updateCount=" + CandlesticksCache.updateCount);
+//		System.out.println("EvoBollingerBandService.java: updateCount=" + CandlesticksCache.updateCount);
 		
 		for (CandlesticksCache candlesticksCache : candlesticksCaches) {
 			List<Candlestick> candlesticks = candlesticksCache.getLatestCandlesticksCacheSet(20);

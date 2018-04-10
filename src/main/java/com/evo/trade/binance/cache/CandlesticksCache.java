@@ -23,7 +23,7 @@ public class CandlesticksCache {
   private int maxSize = 20;
   private String symbol;
   private CandlestickInterval interval;
-  public static long updateCount = 0L;
+//  public static long updateCount = 0L;
 
   public CandlesticksCache(String symbol, CandlestickInterval interval) {
 	  this.symbol = symbol;
@@ -54,7 +54,7 @@ public class CandlesticksCache {
     BinanceApiWebSocketClient client = factory.newWebSocketClient();
 
     client.onCandlestickEvent(symbol.toLowerCase(), interval, response -> {
-    	++updateCount;
+//    	++updateCount;
       Long openTime = response.getOpenTime();
       Candlestick updateCandlestick = candlesticksCache.get(openTime);
       if (updateCandlestick == null) {
@@ -80,7 +80,7 @@ public class CandlesticksCache {
       
       if (candlesticksCache.size() > maxSize) {
     	  ArrayList<Long> keys = new ArrayList<Long>(candlesticksCache.keySet());
-    	  candlesticksCache.remove( keys.get( keys.size()-1 ) );
+    	  candlesticksCache.remove( keys.get(0) );
       }
     });
   }
