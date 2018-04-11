@@ -26,5 +26,6 @@ public class EvotradeappserverApplication {
 		candlestickIntervals.add(CandlestickInterval.DAILY);
 		candlestickIntervals.add(CandlestickInterval.WEEKLY);
 		EvoBollingerBandService evoBBService = new EvoBollingerBandService(candlestickIntervals);
+		evoBBService.start();
 	}
 }

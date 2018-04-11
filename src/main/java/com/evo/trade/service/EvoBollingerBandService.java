@@ -7,47 +7,113 @@ import java.util.TreeMap;
 
 import com.binance.api.client.BinanceApiClientFactory;
 import com.binance.api.client.BinanceApiRestClient;
-import com.binance.api.client.domain.event.AllMarketTickersEvent;
 import com.binance.api.client.domain.market.Candlestick;
 import com.binance.api.client.domain.market.CandlestickInterval;
 import com.binance.api.client.domain.market.TickerPrice;
 import com.coinmarketcap.api.client.impl.CoinmarketcapApiService;
 import com.coinmarketcap.api.objects.CoinmarketcapTickerPrice;
-import com.evo.trade.binance.cache.AllMarketTickers;
 import com.evo.trade.binance.cache.CandlesticksCache;
 import com.evo.trade.objects.BollingerBand;
+import com.evo.trade.objects.EvoTimeInterval;
+import com.evo.trade.objects.EvoTimeIntervalMillis;
 import com.evo.trade.utils.Utilities;
 
-public class EvoBollingerBandService {
+public class EvoBollingerBandService implements Runnable{
+	
+	// Thread implements
+	protected Thread thread;
+	protected String threadName;
+	protected boolean threadSuspended = false;
+	protected long interval; // milliseconds
+
+	public void suspend() {
+		threadSuspended = true;
+		System.out.println(threadName + " suspended");
+	}
+
+	public synchronized void resume() {
+		threadSuspended = false;
+		notify();
+		System.out.println(threadName + " resumed");
+	}
+
+	public synchronized void stop() {
+		thread = null;
+		notify();
+		System.out.println(threadName + " stoped");
+	}
+
+	public void start() {
+		if (thread == null) {
+			thread = new Thread(this, threadName);
+			thread.start();
+			System.out.println(threadName + " started");
+		}
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		Thread thisThread = Thread.currentThread();
+		while (thread == thisThread) {
+			try {
+				// Please place your codes here.
+				// ...
+				Long startTimeMillis = System.currentTimeMillis();
+				
+				map = new TreeMap<>();
+				for (CandlestickInterval cdInterval : candlestickIntervals) {
+					List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
+					map.put(cdInterval, candlesticksCaches);
+				}
+
+				BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance();
+			    BinanceApiRestClient client = factory.newRestClient();
+				List<TickerPrice> tickerPrices = client.getAllPrices();
+				
+				int threadCount = 0;
+				for (CandlestickInterval cdInterval : candlestickIntervals) {
+					List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
+					for (TickerPrice tickerPrice : tickerPrices) {
+						candlesticksCaches.add( new CandlesticksCache(tickerPrice.getSymbol(), cdInterval) );
+						++threadCount;
+					}
+					map.put(cdInterval, candlesticksCaches);
+				}
+				System.out.println("threadCount=" + threadCount);
+				
+				Long endTimeMillis = System.currentTimeMillis();
+				
+				System.out.println(threadName + " running: endTimeMillis - startTimeMillis = " + (endTimeMillis - startTimeMillis));
+				// END your codes
+				
+				Thread.sleep(interval - (endTimeMillis - startTimeMillis));
+				synchronized (this) {
+					while (threadSuspended && thread == thisThread)
+						wait();
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	// END: Thread implements
 	
 	static Map<CandlestickInterval, List<CandlesticksCache>> map;
+	private List<CandlestickInterval> candlestickIntervals;
 	
 	public EvoBollingerBandService(List<CandlestickInterval> candlestickIntervals) {
-		
-		map = new TreeMap<>();
-		for (CandlestickInterval cdInterval : candlestickIntervals) {
-			List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
-			map.put(cdInterval, candlesticksCaches);
-		}
-
-		BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance();
-	    BinanceApiRestClient client = factory.newRestClient();
-		List<TickerPrice> tickerPrices = client.getAllPrices();
-		
-		int threadCount = 0;
-		for (CandlestickInterval cdInterval : candlestickIntervals) {
-			List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
-			for (TickerPrice tickerPrice : tickerPrices) {
-				//this is very very idiot, only use for reduce heap memory temporally
-//				if(tickerPrice.getSymbol().endsWith("USDT") || tickerPrice.getSymbol().endsWith("BNB"))
-//					continue;
-				
-				candlesticksCaches.add( new CandlesticksCache(tickerPrice.getSymbol(), cdInterval) );
-				++threadCount;
-			}
-			map.put(cdInterval, candlesticksCaches);
-		}
-		System.out.println("threadCount=" + threadCount);
+		this.threadName = "Evo Bollinger Band Service";
+		this.interval = EvoTimeIntervalMillis.HOURLY_MILLIS.getIntervalIdMillis();
+		this.candlestickIntervals = candlestickIntervals;
+	}
+	
+	public EvoBollingerBandService(String threadName, Long interval, List<CandlestickInterval> candlestickIntervals) {
+		this.threadName = threadName;
+		this.interval = interval;
+		this.candlestickIntervals = candlestickIntervals;
 	}
 	
 	public static Map<CandlestickInterval, List<CandlesticksCache>> getAllCandlesticksCaches() {
