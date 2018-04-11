@@ -61,6 +61,18 @@ public class EvoBollingerBandService implements Runnable{
 				// ...
 				Long startTimeMillis = System.currentTimeMillis();
 				
+				if(map != null && !map.isEmpty()) {
+					for (CandlestickInterval cdInterval : candlestickIntervals) {
+						List<CandlesticksCache> candlesticksCaches = map.get(cdInterval);
+						if (candlesticksCaches == null || candlesticksCaches.isEmpty())
+							continue;
+						
+						for (CandlesticksCache candlesticksCache : candlesticksCaches) {
+							candlesticksCache.close();
+						}
+					}
+				}
+				
 				map = new TreeMap<>();
 				for (CandlestickInterval cdInterval : candlestickIntervals) {
 					List<CandlesticksCache> candlesticksCaches = new ArrayList<>();
@@ -106,7 +118,7 @@ public class EvoBollingerBandService implements Runnable{
 	
 	public EvoBollingerBandService(List<CandlestickInterval> candlestickIntervals) {
 		this.threadName = "Evo Bollinger Band Service";
-		this.interval = EvoTimeIntervalMillis.HOURLY_MILLIS.getIntervalIdMillis();
+		this.interval = EvoTimeIntervalMillis.DAILY_MILLIS.getIntervalIdMillis();
 		this.candlestickIntervals = candlestickIntervals;
 	}
 	

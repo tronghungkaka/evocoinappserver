@@ -6,6 +6,8 @@ import com.binance.api.client.BinanceApiWebSocketClient;
 import com.binance.api.client.domain.market.Candlestick;
 import com.binance.api.client.domain.market.CandlestickInterval;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ public class CandlesticksCache {
   private String symbol;
   private CandlestickInterval interval;
 //  public static long updateCount = 0L;
+  private Closeable ws;
 
   public CandlesticksCache(String symbol, CandlestickInterval interval) {
 	  this.symbol = symbol;
@@ -53,7 +56,7 @@ public class CandlesticksCache {
     BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance();
     BinanceApiWebSocketClient client = factory.newWebSocketClient();
 
-    client.onCandlestickEvent(symbol.toLowerCase(), interval, response -> {
+    ws = client.onCandlestickEvent(symbol.toLowerCase(), interval, response -> {
 //    	++updateCount;
       Long openTime = response.getOpenTime();
       Candlestick updateCandlestick = candlesticksCache.get(openTime);
@@ -83,6 +86,18 @@ public class CandlesticksCache {
     	  candlesticksCache.remove( keys.get(0) );
       }
     });
+  }
+  
+  public void close() {
+	  if(ws == null)
+		  return;
+	  
+	  try {
+		  ws.close();
+	  } catch (IOException e) {
+		// TODO Auto-generated catch block
+		  e.printStackTrace();
+	  }
   }
 
   /**
