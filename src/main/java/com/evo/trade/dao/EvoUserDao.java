@@ -150,8 +150,9 @@ public class EvoUserDao extends ConfigDao {
 		pstmt.setString(2, user.getPassword());
 		ResultSet rs = pstmt.executeQuery();
 		
-		User newUser = new User();
+		User newUser = null;
 		while (rs.next()) {
+			newUser = new User();
 			newUser.setId(rs.getInt("id"));
 			newUser.setUsername(rs.getString("username"));
 			newUser.setPassword(rs.getString("password"));
