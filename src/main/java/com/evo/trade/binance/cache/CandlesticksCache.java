@@ -5,6 +5,13 @@ import com.binance.api.client.BinanceApiRestClient;
 import com.binance.api.client.BinanceApiWebSocketClient;
 import com.binance.api.client.domain.market.Candlestick;
 import com.binance.api.client.domain.market.CandlestickInterval;
+import com.evo.trade.WebSocketController;
+import com.evo.trade.objects.BollingerBand;
+import com.evo.trade.objects.StreamingBollingerBand;
+import com.evo.trade.service.EvoBollingerBandSendService;
+import com.evo.trade.service.EvoBollingerBandService;
+import com.evo.trade.service.EvoCoinmarketcapService;
+import com.evo.trade.utils.Utilities;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -12,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.springframework.boot.autoconfigure.amqp.RabbitProperties.Template;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 /**
  * Illustrates how to use the klines/candlesticks event stream to create a local cache of bids/asks for a symbol.
@@ -49,44 +59,73 @@ public class CandlesticksCache {
     }
   }
 
-  /**
-   * Begins streaming of depth events.
-   */
-  private void startCandlestickEventStreaming(String symbol, CandlestickInterval interval) {
-    BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance();
-    BinanceApiWebSocketClient client = factory.newWebSocketClient();
+	/**
+	 * Begins streaming of depth events.
+	 */
+	private void startCandlestickEventStreaming(String symbol, CandlestickInterval interval) {
+		BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance();
+		BinanceApiWebSocketClient client = factory.newWebSocketClient();
 
-    ws = client.onCandlestickEvent(symbol.toLowerCase(), interval, response -> {
-//    	++updateCount;
-      Long openTime = response.getOpenTime();
-      Candlestick updateCandlestick = candlesticksCache.get(openTime);
-      if (updateCandlestick == null) {
-        // new candlestick
-        updateCandlestick = new Candlestick();
-      }
-      // update candlestick with the stream data
-      updateCandlestick.setOpenTime(response.getOpenTime());
-      updateCandlestick.setOpen(response.getOpen());
-      updateCandlestick.setLow(response.getLow());
-      updateCandlestick.setHigh(response.getHigh());
-      updateCandlestick.setClose(response.getClose());
-      updateCandlestick.setCloseTime(response.getCloseTime());
-      updateCandlestick.setVolume(response.getVolume());
-      updateCandlestick.setNumberOfTrades(response.getNumberOfTrades());
-      updateCandlestick.setQuoteAssetVolume(response.getQuoteAssetVolume());
-      updateCandlestick.setTakerBuyQuoteAssetVolume(response.getTakerBuyQuoteAssetVolume());
-      updateCandlestick.setTakerBuyBaseAssetVolume(response.getTakerBuyQuoteAssetVolume());
+		ws = client.onCandlestickEvent(symbol.toLowerCase(), interval, response -> {
+			// ++updateCount;
+			Long openTime = response.getOpenTime();
+			Candlestick updateCandlestick = candlesticksCache.get(openTime);
+			if (updateCandlestick == null) {
+				// new candlestick
+				updateCandlestick = new Candlestick();
+			}
+			// update candlestick with the stream data
+			updateCandlestick.setOpenTime(response.getOpenTime());
+			updateCandlestick.setOpen(response.getOpen());
+			updateCandlestick.setLow(response.getLow());
+			updateCandlestick.setHigh(response.getHigh());
+			updateCandlestick.setClose(response.getClose());
+			updateCandlestick.setCloseTime(response.getCloseTime());
+			updateCandlestick.setVolume(response.getVolume());
+			updateCandlestick.setNumberOfTrades(response.getNumberOfTrades());
+			updateCandlestick.setQuoteAssetVolume(response.getQuoteAssetVolume());
+			updateCandlestick.setTakerBuyQuoteAssetVolume(response.getTakerBuyQuoteAssetVolume());
+			updateCandlestick.setTakerBuyBaseAssetVolume(response.getTakerBuyQuoteAssetVolume());
 
-      // Store the updated candlestick in the cache
-      candlesticksCache.put(openTime, updateCandlestick);
-//      System.out.println(updateCandlestick);
-      
-      if (candlesticksCache.size() > maxSize) {
-    	  ArrayList<Long> keys = new ArrayList<Long>(candlesticksCache.keySet());
-    	  candlesticksCache.remove( keys.get(0) );
-      }
-    });
-  }
+			// Store the updated candlestick in the cache
+			candlesticksCache.put(openTime, updateCandlestick);
+			// System.out.println(updateCandlestick);
+
+			// web socket
+			BollingerBand bb = Utilities.calcBollingerBand(getLatestCandlesticksCacheSet(20));
+//			 System.out.println("web socket: " + (bb!=null ? bb.isOutOfBands() : this.symbol));
+			if (bb != null) {
+				bb.setSymbol(this.symbol);
+				bb.setInterval(this.interval.getIntervalId());
+				// System.out.println("web socket: " + bb.getSymbol());
+				// WebSocketController.getInstance().fireBollingerBand(bb,
+				// interval.getIntervalId());
+
+				StreamingBollingerBand sbb = new StreamingBollingerBand();
+				sbb.setExchange(bb.getExchange());
+				sbb.setSymbol(bb.getSymbol());
+				sbb.setPercentage("" + bb.getPercentage());
+				sbb.setBaseCurrencyPrice(response.getClose());
+				sbb.set_24hQuoteVolume( AllMarketTickers.getMarketTickersEvent(this.symbol).getTotalTradedQuoteAssetVolume());
+				sbb.setIsOutOfLowerBB("" + bb.isOutOfLowerBollingerBand());
+				sbb.setIsOutOfUpperBB("" + bb.isOutOfUpperBollingerBand());
+				EvoBollingerBandSendService.send(sbb, this.interval.getIntervalId());
+			}
+			else {
+				StreamingBollingerBand sbb = new StreamingBollingerBand();
+				sbb.setExchange("binance");
+				sbb.setSymbol(this.symbol);
+				sbb.setIsOutOfLowerBB("false");
+				sbb.setIsOutOfUpperBB("false");
+				EvoBollingerBandSendService.send(sbb, this.interval.getIntervalId());
+			}
+
+			if (candlesticksCache.size() > maxSize) {
+				ArrayList<Long> keys = new ArrayList<Long>(candlesticksCache.keySet());
+				candlesticksCache.remove(keys.get(0));
+			}
+		});
+	}
   
   public void close() {
 	  if(ws == null)

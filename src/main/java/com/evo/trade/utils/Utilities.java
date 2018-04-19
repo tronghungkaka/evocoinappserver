@@ -1,6 +1,10 @@
 package com.evo.trade.utils;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.binance.api.client.domain.market.Candlestick;
+import com.evo.trade.objects.BollingerBand;
 
 public class Utilities {
 	public static Double average(List<Double> arr) {
@@ -26,5 +30,34 @@ public class Utilities {
 		}
 		tmp /= arr.size();
 		return Math.sqrt(tmp);
+	}
+	
+	public static BollingerBand calcBollingerBand(List<Candlestick> candlestickBars) {
+		if (candlestickBars == null)
+			return null;
+
+		List<Double> closePrices = new ArrayList<>();
+		int i=0, _10_period_avg_volume_num = 10;
+		Double quoteAssetVolumeSum = 0.;
+		
+		for (Candlestick cdstBar : candlestickBars) {
+			closePrices.add(Double.valueOf(cdstBar.getClose()));
+			if(i < _10_period_avg_volume_num) {
+				++i;
+				quoteAssetVolumeSum += Double.valueOf( cdstBar.getQuoteAssetVolume() );
+			}
+		}
+		
+		BollingerBand bb = new BollingerBand("binance", Double.valueOf(candlestickBars.get(0).getClose()));
+		bb.set_10PeriodAVGVolume( quoteAssetVolumeSum / _10_period_avg_volume_num );
+		bb.setTimestamp(System.currentTimeMillis());
+		bb.setSma(Utilities.average(closePrices));
+		Double stddev = Utilities.stdDeviation(closePrices);
+		bb.setUpperBB(bb.getSma() + (stddev * BollingerBand.FACTOR));
+		bb.setLowerBB(bb.getSma() - (stddev * BollingerBand.FACTOR));
+		if (bb.isOutOfBands())
+			return bb;
+
+		return null;
 	}
 }

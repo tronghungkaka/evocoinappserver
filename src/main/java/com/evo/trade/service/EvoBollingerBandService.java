@@ -12,6 +12,8 @@ import com.binance.api.client.domain.market.CandlestickInterval;
 import com.binance.api.client.domain.market.TickerPrice;
 import com.coinmarketcap.api.client.impl.CoinmarketcapApiService;
 import com.coinmarketcap.api.objects.CoinmarketcapTickerPrice;
+import com.evo.trade.binance.cache.AllMarketTickers;
+import com.evo.trade.binance.cache.AllMarketTickersCache;
 import com.evo.trade.binance.cache.CandlesticksCache;
 import com.evo.trade.objects.BollingerBand;
 import com.evo.trade.objects.EvoTimeInterval;
@@ -183,13 +185,19 @@ public class EvoBollingerBandService implements Runnable{
 //				bb.set_1MHighPrice( Double.valueOf(_1MCandlesticks.get(0).getHigh()) );
 //				bb.set_1MLowPrice( Double.valueOf(_1MCandlesticks.get(0).getLow()) );
 				
-//				List<AllMarketTickersEvent> allMarketTickersEvents = AllMarketTickers.getAllMarketTickersEvent();
-//				for (AllMarketTickersEvent allMarketTickersEvent : allMarketTickersEvents) {
-//					if (allMarketTickersEvent.getSymbol().equalsIgnoreCase(candlesticksCache.getSymbol()) ) {
-//						bb.set_24hr_volume( Double.valueOf( allMarketTickersEvent.getTotalTradedBaseAssetVolume() ) );
-//						bb.set_24hr_quote_volume( Double.valueOf( allMarketTickersEvent.getTotalTradedQuoteAssetVolume() ) );
+//				List<AllMarketTickersCache> allMarketTickersEvents = AllMarketTickers.getAllMarketTickersEvent();
+//				for (AllMarketTickersCache allMarketTickersCache : allMarketTickersEvents) {
+//					System.out.println("candlesticksCache.getSymbol(): " + candlesticksCache.getSymbol());
+//					if (allMarketTickersCache.getSymbol().equalsIgnoreCase(candlesticksCache.getSymbol()) ) {
+//						bb.set_24hr_volume( Double.valueOf( allMarketTickersCache.getTotalTradedBaseAssetVolume() ) );
+//						bb.set_24hr_quote_volume( Double.valueOf( allMarketTickersCache.getTotalTradedQuoteAssetVolume() ) );
+//						System.out.println("_24hr_quote_volume: " + allMarketTickersCache.getTotalTradedQuoteAssetVolume());
 //					}
 //				}
+				
+				AllMarketTickersCache allMarketTickersCache = AllMarketTickers.getMarketTickersEvent(candlesticksCache.getSymbol());
+				bb.set_24hr_volume( Double.valueOf( allMarketTickersCache.getTotalTradedBaseAssetVolume() ) );
+				bb.set_24hr_quote_volume( Double.valueOf( allMarketTickersCache.getTotalTradedQuoteAssetVolume() ) );
 				
 				bollingerBands.add(bb);
 			}
