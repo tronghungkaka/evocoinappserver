@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.binance.api.client.domain.market.CandlestickInterval;
 import com.evo.trade.binance.cache.AllMarketTickers;
+import com.evo.trade.service.BinanceAllMarketTickersService;
 import com.evo.trade.service.EvoBollingerBandService;
 import com.evo.trade.service.EvoCoinmarketcapService;
 import com.evo.trade.service.EvoPostgresqlService;
@@ -19,12 +20,13 @@ public class EvotradeappserverApplication {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		SpringApplication.run(EvotradeappserverApplication.class, args);
 		
-		EvoPostgresqlService.getInstance().createPostgresqlDb();
+//		EvoPostgresqlService.getInstance().createPostgresqlDb();
 		
-		EvoCoinmarketcapService evoCmcService = new EvoCoinmarketcapService();
-		evoCmcService.start();
+//		EvoCoinmarketcapService evoCmcService = new EvoCoinmarketcapService();
+//		evoCmcService.start();
 		
-		AllMarketTickers allMarketTickers = new AllMarketTickers();
+		BinanceAllMarketTickersService bnbAllMarketTickersService = new BinanceAllMarketTickersService();
+		bnbAllMarketTickersService.start();
 		
 		List<CandlestickInterval> candlestickIntervals = new ArrayList<>();
 		candlestickIntervals.add(CandlestickInterval.FIVE_MINUTES);

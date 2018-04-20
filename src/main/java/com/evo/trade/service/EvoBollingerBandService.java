@@ -195,7 +195,7 @@ public class EvoBollingerBandService implements Runnable{
 //					}
 //				}
 				
-				AllMarketTickersCache allMarketTickersCache = AllMarketTickers.getMarketTickersEvent(candlesticksCache.getSymbol());
+				AllMarketTickersCache allMarketTickersCache = BinanceAllMarketTickersService.getAllMarketTickers().getMarketTickersEvent(candlesticksCache.getSymbol());
 				bb.set_24hr_volume( Double.valueOf( allMarketTickersCache.getTotalTradedBaseAssetVolume() ) );
 				bb.set_24hr_quote_volume( Double.valueOf( allMarketTickersCache.getTotalTradedQuoteAssetVolume() ) );
 				

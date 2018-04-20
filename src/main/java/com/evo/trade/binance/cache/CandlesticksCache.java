@@ -8,6 +8,7 @@ import com.binance.api.client.domain.market.CandlestickInterval;
 import com.evo.trade.WebSocketController;
 import com.evo.trade.objects.BollingerBand;
 import com.evo.trade.objects.StreamingBollingerBand;
+import com.evo.trade.service.BinanceAllMarketTickersService;
 import com.evo.trade.service.EvoBollingerBandSendService;
 import com.evo.trade.service.EvoBollingerBandService;
 import com.evo.trade.service.EvoCoinmarketcapService;
@@ -106,7 +107,7 @@ public class CandlesticksCache {
 				sbb.setSymbol(bb.getSymbol());
 				sbb.setPercentage("" + bb.getPercentage());
 				sbb.setBaseCurrencyPrice(response.getClose());
-				sbb.set_24hQuoteVolume( AllMarketTickers.getMarketTickersEvent(this.symbol).getTotalTradedQuoteAssetVolume());
+				sbb.set_24hQuoteVolume( BinanceAllMarketTickersService.getAllMarketTickers().getMarketTickersEvent(this.symbol).getTotalTradedQuoteAssetVolume());
 				sbb.setIsOutOfLowerBB("" + bb.isOutOfLowerBollingerBand());
 				sbb.setIsOutOfUpperBB("" + bb.isOutOfUpperBollingerBand());
 				EvoBollingerBandSendService.send(sbb, this.interval.getIntervalId());

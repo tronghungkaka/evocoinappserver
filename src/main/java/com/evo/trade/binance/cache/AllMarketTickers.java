@@ -1,5 +1,7 @@
 package com.evo.trade.binance.cache;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -9,7 +11,9 @@ import com.evo.trade.binance.cache.AllMarketTickersCache;
 
 public class AllMarketTickers {
 	
-	static Map<String, AllMarketTickersCache> map = new TreeMap();
+	Map<String, AllMarketTickersCache> map = new TreeMap();
+	Closeable ws;
+	
 
 	public AllMarketTickers() {
 		startAllMarketTickersEventStreaming();
@@ -19,7 +23,7 @@ public class AllMarketTickers {
 		BinanceApiClientFactory factory = BinanceApiClientFactory.newInstance();
 		BinanceApiWebSocketClient client = factory.newWebSocketClient();
 
-		client.onAllMarketTickersEvent(event -> {
+		ws = client.onAllMarketTickersEvent(event -> {
 //			 System.out.println(event);
 			 String str = event.toString();
 			 int i=0, c;
@@ -47,7 +51,13 @@ public class AllMarketTickers {
 		});
 	}
 	
-	public static AllMarketTickersCache getMarketTickersEvent(String symbol) {
+	public AllMarketTickersCache getMarketTickersEvent(String symbol) {
 		return map.get(symbol);
+	}
+	
+	public void close() throws IOException {
+		if (ws == null)
+			return;
+		ws.close();
 	}
 }
