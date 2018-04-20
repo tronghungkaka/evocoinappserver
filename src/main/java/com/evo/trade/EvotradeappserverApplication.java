@@ -20,7 +20,7 @@ public class EvotradeappserverApplication {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		SpringApplication.run(EvotradeappserverApplication.class, args);
 		
-//		EvoPostgresqlService.getInstance().createPostgresqlDb();
+		EvoPostgresqlService.getInstance().createPostgresqlDb();
 		
 //		EvoCoinmarketcapService evoCmcService = new EvoCoinmarketcapService();
 //		evoCmcService.start();
