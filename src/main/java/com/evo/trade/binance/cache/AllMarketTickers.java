@@ -11,11 +11,12 @@ import com.evo.trade.binance.cache.AllMarketTickersCache;
 
 public class AllMarketTickers {
 	
-	Map<String, AllMarketTickersCache> map = new TreeMap();
+	Map<String, AllMarketTickersCache> map;
 	Closeable ws;
 	
 
 	public AllMarketTickers() {
+		map = new TreeMap();
 		startAllMarketTickersEventStreaming();
 	}
 	
