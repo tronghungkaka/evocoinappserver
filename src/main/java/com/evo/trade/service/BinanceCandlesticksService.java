@@ -126,9 +126,9 @@ public class BinanceCandlesticksService implements Runnable {
 	}
 	
 	public static List<CandlesticksCache> getCandlesticksCaches(CandlestickInterval interval) {
-		System.out.println("BinanceCandlesticksService.java: interval=" + interval);
-		System.out.println("BinanceCandlesticksService.java: interval.getIntervalId()=" + interval.getIntervalId());
-		System.out.println("BinanceCandlesticksService.java: map.get(interval).size()=" + map.get(interval).size());
+//		System.out.println("BinanceCandlesticksService.java: interval=" + interval);
+//		System.out.println("BinanceCandlesticksService.java: interval.getIntervalId()=" + interval.getIntervalId());
+//		System.out.println("BinanceCandlesticksService.java: map.get(interval).size()=" + map.get(interval).size());
 		return map.get(interval);
 	}
 }

@@ -86,7 +86,8 @@ public class EvoDominanceService {
 			Dominance dominance = new Dominance();
 			dominance.setSymbol(_1hCandlesticksCache.getSymbol());
 			dominance.setBaseCurrencyPrice(candlesticks.get(0).getClose());
-			Double usdPrice = Double.valueOf(BinanceAllMarketTickersService.getAllMarketTickers().getMarketTickersEvent("BTCUSDT").getCurrentDaysClosePrice())
+			String usdtMarket = dominance.getSymbol().endsWith("BTC") ? "BTCUSDT" : "ETHUSDT";
+			Double usdPrice = Double.valueOf(BinanceAllMarketTickersService.getAllMarketTickers().getMarketTickersEvent(usdtMarket).getCurrentDaysClosePrice())
 					* Double.valueOf(dominance.getBaseCurrencyPrice());
 			dominance.setUsdPrice("" + usdPrice);
 			
