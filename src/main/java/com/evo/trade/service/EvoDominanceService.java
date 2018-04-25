@@ -30,6 +30,9 @@ public class EvoDominanceService {
 		List<Dominance> dominances = new ArrayList<>();
 		Calendar today = Calendar.getInstance();
 		today.set(Calendar.HOUR_OF_DAY, 0);
+		today.set(Calendar.MINUTE, 0);
+		today.set(Calendar.SECOND, 0);
+		today.set(Calendar.MILLISECOND, 0);
 		
 		List<Long> dayOpenTimes = new ArrayList<>();
 		Map<Long, Double> _15daysAfterToday = new TreeMap<>();
