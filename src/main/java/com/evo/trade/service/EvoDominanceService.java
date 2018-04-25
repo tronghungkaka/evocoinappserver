@@ -59,8 +59,8 @@ public class EvoDominanceService {
 						continue;
 					}
 					Double quoteAssetVolume = Double.valueOf( candlestick.getQuoteAssetVolume());
-					Double sell = Double.valueOf( candlestick.getTakerBuyQuoteAssetVolume());
-					Double buy = quoteAssetVolume - sell;
+					Double buy = Double.valueOf( candlestick.getTakerBuyQuoteAssetVolume());
+					Double sell = quoteAssetVolume - buy;
 					Double buy_sell = _15daysAfterToday.get(dayOpenTime) + buy - sell;
 					
 					_15daysAfterToday.put(dayOpenTime, buy_sell);
@@ -93,7 +93,7 @@ public class EvoDominanceService {
 				Excess ex = new Excess();
 				Calendar date = Calendar.getInstance();
 				date.setTimeInMillis(dayOpenTimes.get(j));
-				ex.setDate("" + date.get(Calendar.DAY_OF_MONTH) + "/" + date.get(Calendar.MONTH) + "/" + date.get(Calendar.YEAR));
+				ex.setDate("" + date.get(Calendar.DAY_OF_MONTH) + "/" + (date.get(Calendar.MONTH) + 1) + "/" + date.get(Calendar.YEAR));
 				ex.setValue("" + _15daysAfterToday.get(dayOpenTimes.get(j)));
 				excess.add(ex);
 			}
