@@ -33,6 +33,7 @@ public class EvoDominanceService {
 		today.set(Calendar.MINUTE, 0);
 		today.set(Calendar.SECOND, 0);
 		today.set(Calendar.MILLISECOND, 0);
+		Long todayOpenTime = today.getTimeInMillis();
 		
 		List<Long> dayOpenTimes = new ArrayList<>();
 		Map<Long, Double> _15daysAfterToday = new TreeMap<>();
@@ -58,7 +59,7 @@ public class EvoDominanceService {
 			for (Candlestick candlestick : candlesticks) {
 				Long openTime = candlestick.getOpenTime();
 				for (Long dayOpenTime : dayOpenTimes) {
-					if (!(openTime >= dayOpenTime)) {
+					if (openTime >= todayOpenTime || !(openTime >= dayOpenTime)) {
 						continue;
 					}
 					Double quoteAssetVolume = Double.valueOf( candlestick.getQuoteAssetVolume());
@@ -74,6 +75,7 @@ public class EvoDominanceService {
 			for (int j=0; j<5; ++j) {
 				if (_15daysAfterToday.get(dayOpenTimes.get(j)) > 0) {
 					is5dayNegativeExcess = false;
+					break;
 				}
 			}
 			if (is5dayNegativeExcess == false) {
