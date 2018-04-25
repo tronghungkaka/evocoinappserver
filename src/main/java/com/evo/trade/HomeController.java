@@ -23,7 +23,9 @@ import com.evo.trade.dao.EvoBollingerBandDao;
 import com.evo.trade.dao.EvoTestDao;
 import com.evo.trade.dao.EvoUserDao;
 import com.evo.trade.objects.BollingerBand;
+import com.evo.trade.objects.Dominance;
 import com.evo.trade.objects.User;
+import com.evo.trade.service.EvoDominanceService;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @RestController
@@ -145,6 +147,15 @@ public class HomeController {
     	Collections.sort(bbres.ooLowerBBs, new Sortbypercentage());
     	Collections.sort(bbres.ooUpperBBs, new Sortbypercentage());
 		return bbres;
+		
+	}
+	
+	@RequestMapping(value = "/api/evo/dominance", method = RequestMethod.GET, produces = "application/json")
+	public List<Dominance> getDominances(
+			@RequestParam("exchange") String exchange) {
+		List<Dominance> dominances = EvoDominanceService.getInstance().getDominances();
+		
+		return dominances;
 	}
 	
 	/**

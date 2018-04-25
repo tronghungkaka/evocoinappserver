@@ -33,7 +33,7 @@ public class CandlesticksCache {
    * Key is the start/open time of the candle, and the value contains candlestick date.
    */
   private Map<Long, Candlestick> candlesticksCache;
-  private int maxSize = 20;
+  private int maxSize = 400;
   private String symbol;
   private CandlestickInterval interval;
 //  public static long updateCount = 0L;
@@ -157,6 +157,15 @@ public class CandlesticksCache {
 	  ArrayList<Long> keys = new ArrayList<Long>(candlesticksCache.keySet());
 	  List<Candlestick> candlesticks = new ArrayList<>();
 	  for (int i=keys.size()-1, j=0; i>=0 && j<number; --i, ++j) {
+		  candlesticks.add( candlesticksCache.get(keys.get(i)) );
+	  }
+	  return candlesticks;
+  }
+  
+  public List<Candlestick> getAllLatestCandlesticksCacheSet() {
+	  ArrayList<Long> keys = new ArrayList<Long>(candlesticksCache.keySet());
+	  List<Candlestick> candlesticks = new ArrayList<>();
+	  for (int i=keys.size()-1; i>=0; --i) {
 		  candlesticks.add( candlesticksCache.get(keys.get(i)) );
 	  }
 	  return candlesticks;

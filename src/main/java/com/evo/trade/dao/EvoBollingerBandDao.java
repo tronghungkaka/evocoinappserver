@@ -65,7 +65,7 @@ public class EvoBollingerBandDao extends ConfigDao {
 		switch (database) {
 		case PROPERTY:
 			CandlestickInterval intervalId = CandlestickInterval.getCandlestickInterval(interval);
-			bollingerbands = EvoBollingerBandService.getBollingerBands(intervalId);
+			bollingerbands = EvoBollingerBandService.getInstance().getBollingerBands(intervalId);
 			break;
 		case FILE:
 			for (String candlestickInterval : BollingerBand.CANDLESTICK_INTERVALS) {

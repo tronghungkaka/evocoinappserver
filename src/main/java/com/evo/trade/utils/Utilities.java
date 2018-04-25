@@ -1,6 +1,8 @@
 package com.evo.trade.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import com.binance.api.client.domain.market.Candlestick;
@@ -59,5 +61,60 @@ public class Utilities {
 			return bb;
 
 		return null;
+	}
+	
+	public static boolean isTimestampOfTheDay(long timestamp, Calendar calendar) {
+		Calendar timeToCheck = Calendar.getInstance();
+		timeToCheck.setTimeInMillis(timestamp);
+		
+		if (calendar.get(Calendar.YEAR) == timeToCheck.get(Calendar.YEAR)
+				&& calendar.get(Calendar.DAY_OF_YEAR) == timeToCheck.get(Calendar.DAY_OF_YEAR)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static List<Double> calcRSI(List<Double> closePrices) {
+		List<Double> rsis = new ArrayList<>();
+		int j=0;
+		Double avgGain = 0.;
+		Double avgLoss = 0.;
+		for (int i=closePrices.size()-2; i>=0; --i) {
+			Double change = closePrices.get(i) - closePrices.get(i+1);
+			
+			if (j<14) {
+				if (change > 0) {
+					avgGain += change;
+				}
+				else {
+					avgLoss += -change;
+				}
+				++j;
+				continue;
+			}
+			
+			if (j==14) {
+				avgGain = avgGain / 14.;
+				avgLoss = avgLoss / 14.;
+				++j;
+			}
+			else {
+				Double currentGain = change > 0. ? change : 0.;
+				Double currentLoss = change > 0. ? 0. : -change;
+				avgGain = ((avgGain * 13.) + currentGain) / 14.;
+				avgLoss = ((avgLoss * 13.) + currentLoss) / 14.;
+			}
+			
+			if (avgLoss == 0.) {
+				rsis.add(100.);
+				continue;
+			}
+
+			Double rs = avgGain / avgLoss;
+			Double rsi = 100. - 100. / (1. + rs);
+			
+			rsis.add(rsi);
+		}
+		return rsis;
 	}
 }
