@@ -157,6 +157,17 @@ public class HomeController {
 		
 		return dominances;
 	}
+
+	@RequestMapping(value = "/api/evo/dominance/{symbol}", method = RequestMethod.GET, produces = "application/json")
+	public List<Dominance> getDominance(
+			@RequestParam("exchange") String exchange,
+			@PathVariable("symbol") String symbol) {
+		System.out.println("/api/evo/dominance/" + symbol);
+		List<Dominance> dominances = EvoDominanceService.getInstance().getDominance(symbol);
+		
+		return dominances;
+	}
+	
 	
 	/**
      * Coinmarketcap
