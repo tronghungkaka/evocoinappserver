@@ -35,12 +35,18 @@ public class EvoDominanceService {
 		today.set(Calendar.MILLISECOND, 0);
 		Long todayOpenTime = today.getTimeInMillis();
 		
+		System.out.println("todayOpenTime:" + todayOpenTime); 
+		
 		List<Long> dayOpenTimes = new ArrayList<>();
 		Map<Long, Double> _15daysAfterToday = new TreeMap<>();
 		for (int i=0; i<15; ++i) {
 			today.add(Calendar.DAY_OF_MONTH, -1);
-			dayOpenTimes.add(today.getTimeInMillis());
-			_15daysAfterToday.put( today.getTimeInMillis(), 0. );
+			Long currentDayTimeMillis = today.getTimeInMillis();
+			dayOpenTimes.add(currentDayTimeMillis);
+			_15daysAfterToday.put( currentDayTimeMillis, 0. );
+			
+
+			System.out.println("currentDayTimeMillis:" + currentDayTimeMillis); 
 		}
 		List<CandlesticksCache> _1hCandlesticksCaches = BinanceCandlesticksService.getCandlesticksCaches(CandlestickInterval.getCandlestickInterval("1h"));
 		for (CandlesticksCache _1hCandlesticksCache : _1hCandlesticksCaches) {
@@ -51,15 +57,21 @@ public class EvoDominanceService {
 			}
 			
 			// reninitialize the map
-			for (int i=0; i<dayOpenTimes.size(); ++i) {
-				_15daysAfterToday.put(dayOpenTimes.get(i), 0.);
+			for (Long dayOpenTime : dayOpenTimes) {
+				_15daysAfterToday.put(dayOpenTime, 0.);
 			}
 			
+//			int count = 0;
 			List<Candlestick> candlesticks = _1hCandlesticksCache.getAllLatestCandlesticksCacheSet();
 			for (Candlestick candlestick : candlesticks) {
 				Long openTime = candlestick.getOpenTime();
+				if (openTime >= todayOpenTime)
+					continue;
+				
 				for (Long dayOpenTime : dayOpenTimes) {
-					if (openTime >= todayOpenTime || !(openTime >= dayOpenTime)) {
+					if (!(openTime >= dayOpenTime)) {
+//						count = 0;
+//						System.out.println("openTime >= dayOpenTime: count=" + count);
 						continue;
 					}
 					Double quoteAssetVolume = Double.valueOf( candlestick.getQuoteAssetVolume());
@@ -68,6 +80,16 @@ public class EvoDominanceService {
 					Double buy_sell = _15daysAfterToday.get(dayOpenTime) + buy - sell;
 					
 					_15daysAfterToday.put(dayOpenTime, buy_sell);
+					
+//					++count;
+//					if (_1hCandlesticksCache.getSymbol().equals("EVXBTC")) {
+//						System.out.println("symbol:" + _1hCandlesticksCache.getSymbol() + " count:" + count + " dayOpenTime:" + dayOpenTime + " openTime:" + openTime + " quoteAssetVolume:" + quoteAssetVolume + " buy:" + buy + " sell:" + sell + " buy_sell:" + buy_sell);
+//						if (openTime.equals(dayOpenTime)) {
+//							System.out.println("count: " + count + "-------------------------------");
+//						}
+//					}
+					
+					break;
 				}
 			}
 			
