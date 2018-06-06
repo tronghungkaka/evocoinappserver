@@ -20,6 +20,7 @@ public class EvoPostgresqlService {
 	
 	public void createPostgresqlDb() throws ClassNotFoundException, SQLException {
 		EvoUserDao.getInstance().createUserTable();
+		EvoUserDao.getInstance().createSuperRoot();
 		EvoPaymentDao.getInstance().createPaymentTable();
 	}
 }

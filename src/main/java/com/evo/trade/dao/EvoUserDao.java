@@ -51,6 +51,24 @@ public class EvoUserDao extends ConfigDao {
 		return true;
 	}
 	
+	public boolean createSuperRoot() throws ClassNotFoundException, SQLException {
+		User root = new User();
+		root.setUsername("evosuperroot1");
+		root.setPassword("Evosuperroot1");
+		root.setFullName("Evo super root 1");
+		root.setEmail("evocointeam@gmail.com");
+		root.setPhone("");
+		root.setRole(Utilities.ROOT_ROLE);
+		root.setExpired(false);
+		root.setCreatedTimestamp("" + System.currentTimeMillis());
+		root.setFreeTrial(false);
+		root.setPaymentPending(false);
+		
+		createUser(root);
+		
+		return true;
+	}
+	
 	public List<User> getAllUsers() throws ClassNotFoundException, SQLException {
 		Statement stmt = getConnection().createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT * FROM users");
