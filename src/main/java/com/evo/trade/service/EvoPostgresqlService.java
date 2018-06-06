@@ -23,7 +23,8 @@ public class EvoPostgresqlService {
 		EvoUserDao.getInstance().dropUserTable();
 		
 		EvoUserDao.getInstance().createUserTable();
-		EvoUserDao.getInstance().createSuperRoot();
 		EvoPaymentDao.getInstance().createPaymentTable();
+		
+		EvoUserDao.getInstance().createSuperRoot();
 	}
 }
