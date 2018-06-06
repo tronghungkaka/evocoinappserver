@@ -2,6 +2,7 @@ package com.evo.trade.service;
 
 import java.sql.SQLException;
 
+import com.evo.trade.dao.EvoPaymentDao;
 import com.evo.trade.dao.EvoUserDao;
 
 public class EvoPostgresqlService {
@@ -19,5 +20,6 @@ public class EvoPostgresqlService {
 	
 	public void createPostgresqlDb() throws ClassNotFoundException, SQLException {
 		EvoUserDao.getInstance().createUserTable();
+		EvoPaymentDao.getInstance().createPaymentTable();
 	}
 }

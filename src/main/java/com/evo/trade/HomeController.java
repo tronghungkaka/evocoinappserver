@@ -51,37 +51,6 @@ public class HomeController {
 		return timestamp;
 	}
 	
-	@RequestMapping(value = "/api/evo/users", method = RequestMethod.GET, produces = "application/json")
-	public List<User> getAllUsers() throws ClassNotFoundException, SQLException {
-		return EvoUserDao.getInstance().getAllUsers();
-	}
-
-	@RequestMapping(value = "/api/evo/users/{id}", method = RequestMethod.GET, produces = "application/json")
-	public User getUser(@PathVariable("id") int id) throws ClassNotFoundException, SQLException {
-		return EvoUserDao.getInstance().getUser(id);
-	}
-	
-	@RequestMapping(value = "/api/evo/users", method = RequestMethod.POST, produces = "application/json")
-	public boolean createUser(@RequestBody User user) throws ClassNotFoundException, SQLException {
-		return EvoUserDao.getInstance().createUser(user);
-	}
-	
-	@RequestMapping(value = "/api/evo/users/{id}", method = RequestMethod.PUT, produces = "application/json")
-	public boolean updateUser(@PathVariable("id") int id,
-			@RequestBody User user) throws ClassNotFoundException, SQLException {
-		return EvoUserDao.getInstance().updateUser(id, user);
-	}
-	
-	@RequestMapping(value = "/api/evo/users/{id}", method = RequestMethod.DELETE, produces = "application/json")
-	public boolean deleteUser(@PathVariable("id") int id) throws ClassNotFoundException, SQLException {
-		return EvoUserDao.getInstance().deleteUser(id);
-	}
-	
-	@RequestMapping(value = "/api/evo/authenticate", method = RequestMethod.POST, produces = "application/json")
-	public User authenticateUser(@RequestBody  User user) throws ClassNotFoundException, SQLException {
-		return EvoUserDao.getInstance().authenticateUser(user);
-	}
-	
 	class BollingerBandResponse {
 		public @JsonProperty("LastUpdated") Long lastUpdated;
     	public @JsonProperty("OutOfUpperBB") List<BollingerBand> ooUpperBBs;

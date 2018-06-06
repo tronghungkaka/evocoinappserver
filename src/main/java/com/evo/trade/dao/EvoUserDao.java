@@ -8,7 +8,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.evo.trade.objects.Payment;
 import com.evo.trade.objects.User;
+import com.evo.trade.utils.Utilities;
 
 public class EvoUserDao extends ConfigDao {
 	// Singleton design pattern
@@ -26,13 +28,23 @@ public class EvoUserDao extends ConfigDao {
 	public boolean createUserTable() throws SQLException, ClassNotFoundException {
 		Connection conn = getConnection();
 		Statement stmt = conn.createStatement();
-		stmt.executeUpdate("CREATE TABLE IF NOT EXISTS "
-				+ "users (id SERIAL NOT NULL PRIMARY KEY,"
+		String sql = "CREATE TABLE IF NOT EXISTS "
+				+ "users ("
+				+ "id SERIAL NOT NULL PRIMARY KEY,"
 				+ "username varchar(225) NOT NULL UNIQUE,"
 				+ "password varchar(225),"
 				+ "firstName varchar(225),"
 				+ "lastName varchar(225),"
-				+ "role INT NOT NULL);");
+				+ "fullName varchar(225),"
+				+ "email varchar(225),"
+				+ "phone varchar(25),"
+				+ "role INT NOT NULL,"
+//				+ "isExpired BOOLEAN NOT NULL,"
+				+ "createdTimestamp varchar(25),"
+//				+ "isFreeTrial BOOLEAN NOT NULL,"
+				+ "isPaymentPending BOOLEAN NOT NULL"
+				+ ");";
+		stmt.executeUpdate(sql);
 		
 		stmt.close();
 		conn.close();
@@ -44,33 +56,36 @@ public class EvoUserDao extends ConfigDao {
 		ResultSet rs = stmt.executeQuery("SELECT * FROM users");
 		List<User> users = new ArrayList<>();
 		while(rs.next()) {
-			User user = new User();
-			user.setId(rs.getInt("id"));
-			user.setUsername(rs.getString("username"));
-//			user.setPassword(rs.getString("password"));
-			user.setFirstName(rs.getString("firstName"));
-			user.setLastName(rs.getString("lastName"));
-			user.setRole(rs.getInt("role"));
+			User user = setUser(rs);
 			users.add( user );
 		}
 		rs.close();
 		stmt.close();
 		return users;
 	}
+
+	public List<User> getAllUsersAccount() throws ClassNotFoundException, SQLException {
+		PreparedStatement pstmt = getConnection().prepareStatement("SELECT * FROM users WHERE role < ?");
+		pstmt.setInt(1, Utilities.ADMIN_ROLE);
+		ResultSet rs = pstmt.executeQuery();
+		List<User> users = new ArrayList<>();
+		while(rs.next()) {
+			User user = setUser(rs);
+			users.add( user );
+		}
+		rs.close();
+		pstmt.close();
+		return users;
+	}
 	
-	public User getUser(int id) throws ClassNotFoundException, SQLException {
+	public User getUserById(int id) throws ClassNotFoundException, SQLException {
 		Connection conn = getConnection();
 		PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?;");
 		pstmt.setInt(1, id);
 		ResultSet rs = pstmt.executeQuery();
 		User user = new User();
 		while(rs.next()) {
-			user.setId(rs.getInt("id"));
-			user.setUsername(rs.getString("username"));
-//			user.setPassword(rs.getString("password"));
-			user.setFirstName(rs.getString("firstName"));
-			user.setLastName(rs.getString("lastName"));
-			user.setRole(rs.getInt("role"));
+			user = setUser(rs);
 			break;
 		}
 		rs.close();
@@ -78,8 +93,30 @@ public class EvoUserDao extends ConfigDao {
 		conn.close();
 		return user;
 	}
+
+	public User getUserByUsername(String username) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE username = ?;");
+		pstmt.setString(1, username);
+		ResultSet rs = pstmt.executeQuery();
+		User user = new User();
+		while(rs.next()) {
+			user = setUser(rs);
+			break;
+		}
+		rs.close();
+		pstmt.close();
+		conn.close();
+		return user;
+	}
+
+	public User getUserByTransactionId(String transactionId) throws ClassNotFoundException, SQLException {
+		Payment payment = EvoPaymentDao.getInstance().getPaymentByTransactionId(transactionId);
+		User user = getUserById(payment.getCreatedUserId());
+		return user;
+	}
 	
-	public boolean createUser(User user) throws ClassNotFoundException, SQLException {
+	public User createUser(User user) throws ClassNotFoundException, SQLException {
 		Connection conn = getConnection();
 		String sql = "SELECT * FROM users WHERE username = ?;";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -90,18 +127,101 @@ public class EvoUserDao extends ConfigDao {
 				rs.close();
 				pstmt.close();
 				conn.close();
-				return false;
+				return null;
 			}
 		}
 		
-		sql = "INSERT INTO users (username, password, firstName, lastName, role) "
-				+ "VALUES (?, ?, ?, ?, ?);";
+		sql = "INSERT INTO users ("
+				+ "username, password, firstName, lastName, fullName, "
+				+ "email, phone, role, "
+//				+ "isExpired, "
+				+ "createdTimestamp, "
+//				+ "isFreeTrial, "
+				+ "isPaymentPending) "
+				+ "VALUES ("
+				+ "?, ?, ?, ?, ?, "
+				+ "?, ?, ?, "
+//				+ "?, "
+				+ "?, "
+//				+ "?, "
+				+ "?);";
 		pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1, user.getUsername());
 		pstmt.setString(2, user.getPassword());
 		pstmt.setString(3, user.getFirstName());
 		pstmt.setString(4, user.getLastName());
-		pstmt.setInt(5, user.getRole());
+		pstmt.setString(5, user.getFullName());
+		pstmt.setString(6, user.getEmail());
+		pstmt.setString(7, user.getPhone());
+		pstmt.setInt(8, user.getRole());
+//		pstmt.setBoolean(9, user.isExpired());
+		
+		user.setCreatedTimestamp("" + System.currentTimeMillis());
+		pstmt.setString(9, user.getCreatedTimestamp());
+//		pstmt.setBoolean(11, user.isFreeTrial());
+		pstmt.setBoolean(10, user.isPaymentPending());
+		
+		pstmt.executeUpdate();
+		
+		user = getUserByUsername(user.getUsername());
+		
+		pstmt.close();
+		conn.close();
+		return user;
+	}
+	
+	public boolean updateUser(int id, User user) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "UPDATE users "
+				+ "SET password = ?, firstName = ?, lastName = ?, fullName = ?, email = ?, phone = ?, role = ?, "
+//				+ "isExpired = ?, isFreeTrial = ?, "
+				+ "isPaymentPending = ? "
+				+ "WHERE id = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, user.getPassword());
+		pstmt.setString(2, user.getFirstName());
+		pstmt.setString(3, user.getLastName());
+		pstmt.setString(4, user.getFullName());
+		pstmt.setString(5, user.getEmail());
+		pstmt.setString(6, user.getPhone());
+		pstmt.setInt(7, user.getRole());
+//		pstmt.setBoolean(8, user.isExpired());
+//		pstmt.setBoolean(9, user.isFreeTrial());
+		pstmt.setBoolean(8, user.isPaymentPending());
+		pstmt.setInt(9, id);
+		
+		pstmt.executeUpdate();
+		
+		pstmt.close();
+		conn.close();
+		return true;
+	}
+
+	public boolean createPaymentUser(User user) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "UPDATE users "
+				+ "SET isPaymentPending = ? "
+				+ "WHERE id = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setBoolean(1, true);
+		pstmt.setInt(2, user.getId());
+		
+		pstmt.executeUpdate();
+		
+		pstmt.close();
+		conn.close();
+		return true;
+	}
+
+	public boolean confirmPaymentUser(User user) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "UPDATE users "
+				+ "SET isPaymentPending = ?, role = ? "
+				+ "WHERE id = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setBoolean(1, false);
+		pstmt.setInt(2, user.getRole());
+		pstmt.setInt(3, user.getId());
 		
 		pstmt.executeUpdate();
 		
@@ -110,17 +230,57 @@ public class EvoUserDao extends ConfigDao {
 		return true;
 	}
 	
-	public boolean updateUser(int id, User user) throws ClassNotFoundException, SQLException {
+	public boolean changeRole(User user) throws ClassNotFoundException, SQLException {
 		Connection conn = getConnection();
 		String sql = "UPDATE users "
-				+ "SET password = ?, firstName = ?, lastName = ?, role = ?"
+				+ "SET role = ? "
 				+ "WHERE id = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setInt(1, user.getRole());
+		pstmt.setInt(2, user.getId());
+		
+		pstmt.executeUpdate();
+		
+		pstmt.close();
+		conn.close();
+		return true;
+	}
+
+	public boolean changePassword(User user) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "UPDATE users "
+				+ "SET password = ? "
+				+ "WHERE id = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, user.getPassword());
+		pstmt.setInt(2, user.getId());
+		
+		pstmt.executeUpdate();
+		
+		pstmt.close();
+		conn.close();
+		return true;
+	}
+
+	public boolean updateUser(String username, User user) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "UPDATE users "
+				+ "SET password = ?, firstName = ?, lastName = ?, fullName = ?, email = ?, phone = ?, role = ?, "
+//				+ "isExpired = ?, isFreeTrial = ?, "
+				+ "isPaymentPending = ? "
+				+ "WHERE username = ?;";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
 		pstmt.setString(1, user.getPassword());
 		pstmt.setString(2, user.getFirstName());
 		pstmt.setString(3, user.getLastName());
-		pstmt.setInt(4, user.getRole());
-		pstmt.setInt(5, id);
+		pstmt.setString(4, user.getFullName());
+		pstmt.setString(5, user.getEmail());
+		pstmt.setString(6, user.getPhone());
+		pstmt.setInt(7, user.getRole());
+//		pstmt.setBoolean(8, user.isExpired());
+//		pstmt.setBoolean(9, user.isFreeTrial());
+		pstmt.setBoolean(8, user.isPaymentPending());
+		pstmt.setString(9, username);
 		
 		pstmt.executeUpdate();
 		
@@ -152,14 +312,108 @@ public class EvoUserDao extends ConfigDao {
 		
 		User newUser = null;
 		while (rs.next()) {
-			newUser = new User();
-			newUser.setId(rs.getInt("id"));
-			newUser.setUsername(rs.getString("username"));
-			newUser.setPassword(rs.getString("password"));
-			newUser.setFirstName(rs.getString("firstName"));
-			newUser.setLastName(rs.getString("lastName"));
-			newUser.setRole(rs.getInt("role"));
+			newUser = setUser(rs);
+			break;
 		}
+		if (newUser != null)
+			System.out.println(newUser.toString());
 		return newUser;
+	}
+
+	public boolean validateUsername(String username) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "SELECT * FROM users WHERE username = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, username);
+		ResultSet rs = pstmt.executeQuery();
+		
+		User newUser = null;
+		while (rs.next()) {
+			newUser = setUser(rs);
+		}
+		return newUser != null ? true : false;
+	}
+
+	public boolean validateEmail(String email) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "SELECT * FROM users WHERE email = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, email);
+		ResultSet rs = pstmt.executeQuery();
+		
+		User newUser = null;
+		while (rs.next()) {
+			newUser = setUser(rs);
+		}
+		return newUser != null ? true : false;
+	}
+
+	public boolean validatePhone(String phone) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "SELECT * FROM users WHERE phone = ?;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, phone);
+		ResultSet rs = pstmt.executeQuery();
+		
+		User newUser = null;
+		while (rs.next()) {
+			newUser = setUser(rs);
+		}
+		return newUser != null ? true : false;
+	}
+	
+	private User setUser(ResultSet rs) throws SQLException, ClassNotFoundException {
+		User user = new User();
+
+		user.setId(rs.getInt("id"));
+		user.setUsername(rs.getString("username"));
+//		user.setPassword(rs.getString("password"));
+		user.setFirstName(rs.getString("firstName"));
+		user.setLastName(rs.getString("lastName"));
+		user.setFullName(rs.getString("fullName"));
+		user.setEmail(rs.getString("email"));
+		user.setPhone(rs.getString("phone"));
+		user.setRole(rs.getInt("role"));
+		
+//		user.setExpired(rs.getBoolean("isExpired"));
+		if (user.getId() >= Utilities.ADMIN_ROLE) // admin and root is never expired.
+			user.setExpired(false);
+		else
+			user.setExpired(isUserExpired(user.getId()));
+		
+		user.setCreatedTimestamp(rs.getString("createdTimestamp"));
+		
+//		user.setFreeTrial(rs.getBoolean("isFreeTrial"));
+		user.setFreeTrial(isFreeTrial(Long.parseLong(user.getCreatedTimestamp())));
+		
+		user.setPaymentPending(rs.getBoolean("isPaymentPending"));
+		
+		return user;
+	}
+	
+	public boolean isUserExpired(int userId) throws ClassNotFoundException, SQLException {
+		Connection conn = getConnection();
+		String sql = "SELECT * FROM payments "
+				+ "WHERE createdUserId = ? AND confirmedUserId > 0 "
+				+ "ORDER BY confirmedTimestamp DESC "
+				+ "LIMIT 1;";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setInt(1, userId);
+		ResultSet rs = pstmt.executeQuery();
+		String createdTimestamp = "";
+		while (rs.next()) {
+			createdTimestamp = rs.getString("createdTimestamp");
+			break;
+		}
+		if (createdTimestamp.isEmpty())
+			return true;
+		return Utilities.calcTimeframeBetweenTimestamps(Long.parseLong(createdTimestamp), System.currentTimeMillis(), Utilities.DAY) > 31;
+	}
+	
+	public boolean isFreeTrial(long createdTimestamp) {
+		if (Utilities.calcTimeframeBetweenTimestamps(createdTimestamp, System.currentTimeMillis(), Utilities.DAY) > 7) {
+			return false;
+		}
+		return true;
 	}
 }
