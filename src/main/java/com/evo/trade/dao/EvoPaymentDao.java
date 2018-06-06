@@ -37,6 +37,9 @@ public class EvoPaymentDao extends ConfigDao {
 				+ "paymentPackage varchar(225) NOT NULL"
 				+ ");";
 		stmt.executeUpdate(sql);
+		
+		System.out.println("payments table is created");
+		
 		stmt.close();
 		conn.close();
 		return true;

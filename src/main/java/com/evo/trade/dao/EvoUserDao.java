@@ -45,7 +45,7 @@ public class EvoUserDao extends ConfigDao {
 				+ "isPaymentPending BOOLEAN NOT NULL"
 				+ ");";
 		stmt.executeUpdate(sql);
-		
+		System.out.println("users table is created");
 		stmt.close();
 		conn.close();
 		return true;
@@ -65,6 +65,8 @@ public class EvoUserDao extends ConfigDao {
 		root.setPaymentPending(false);
 		
 		createUser(root);
+		
+		System.out.println("super root is created");
 		
 		return true;
 	}
