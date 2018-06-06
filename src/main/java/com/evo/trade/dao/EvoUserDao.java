@@ -25,6 +25,16 @@ public class EvoUserDao extends ConfigDao {
 		return instance;
 	}
 	
+	public boolean dropUserTable() throws SQLException, ClassNotFoundException {
+		Connection conn = getConnection();
+		Statement stmt = conn.createStatement();
+		String sql = "DROP TABLE IF EXISTS users;";
+		stmt.executeUpdate(sql);
+		stmt.close();
+		conn.close();
+		return true;
+	}
+	
 	public boolean createUserTable() throws SQLException, ClassNotFoundException {
 		Connection conn = getConnection();
 		Statement stmt = conn.createStatement();
