@@ -406,7 +406,7 @@ public class EvoUserDao extends ConfigDao {
 		user.setRole(rs.getInt("role"));
 		
 //		user.setExpired(rs.getBoolean("isExpired"));
-		if (user.getId() >= Utilities.ADMIN_ROLE) // admin and root is never expired.
+		if (user.getRole() >= Utilities.ADMIN_ROLE) // admin and root is never expired.
 			user.setExpired(false);
 		else
 			user.setExpired(isUserExpired(user.getId()));
