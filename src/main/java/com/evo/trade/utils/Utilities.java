@@ -155,7 +155,7 @@ public class Utilities {
 	}
 	
 	public static long calcTimeframeBetweenTimestamps(long firstTimestamp, long secondTimestamp, int timeFrame) {
-		long interval = firstTimestamp - secondTimestamp;
+		long interval = secondTimestamp - firstTimestamp;
 		if (timeFrame == MILLIS) {
 			return interval;
 		}
